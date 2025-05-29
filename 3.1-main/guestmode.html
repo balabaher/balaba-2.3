@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Medicine Search</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.1/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to right, #a4d3ff, #dcdada);
+    }
+    .navbar {
+      background: linear-gradient(to right, #a4d3ff, #dcdada);
+    }
+    .container {
+      border-radius: 10px;
+      border: 2px solid #005bc2;
+    }
+    .navbar-nav .nav-item {
+      border: 2px solid #393dff !important;
+      border-radius: 10px;
+      width: 120px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .navbar-nav .nav-item.register-active {
+      background-color: #2e81ff !important;
+      border-color: #2e81ff !important;
+    }
+    .navbar-nav .nav-item.register-active .nav-link {
+      color: white !important;
+    }
+    .nav-link {
+      color: #002678 !important;
+    }
+    .form-control {
+      border: 2px solid #002678 !important;
+    }
+    .btn {
+      border: 2px solid #002678 !important;
+    }
+    .text-blue {
+      color: #005bc2 !important;
+    }
+    .text-Doctor {
+      color: #0484fc;
+      font-size: 18px;
+      left: -34%;
+      border: 2px solid #0484fc;
+      padding: 10px;
+      border-radius: 40px;
+    }
+    .doctor-img {
+      width: 380px;
+    }
+
+    /* Suggestions dropdown styling */
+    #suggestions {
+      position: absolute;
+      top: 100%; /* right below the input */
+      left: 0;
+      width: 300px; /* match input width */
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 1000;
+      display: none; /* hide by default */
+    }
+    #suggestions li.dropdown-item {
+      padding: 8px 10px;
+      cursor: pointer;
+      white-space: normal;
+    }
+    #suggestions li.dropdown-item:hover {
+      background-color: #f0f0f0;
+    }    #chatWidget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      max-height: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    #chatHeader {
+      background: #007bff;
+      color: white;
+      padding: 10px 15px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+    #chatContent {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 15px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    #symptomsInput {
+      width: 100%;
+      min-height: 60px;
+      max-height: 80px;
+      resize: none;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-size: 14px;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+    }
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    #langSelect {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 14px;
+      margin-right: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #checkBtn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 7px 15px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+    }
+    #checkBtn:hover {
+      background: #0056b3;
+    }
+    #output {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      height: 130px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 14px;
+      color: #333;
+    }   @media (max-width: 554px) {
+      .text-Doctor {
+        display: none !important;
+      }
+    }    .modal-content {
+       border-radius: 15px;
+       border: 2px solid #3d1cfe;
+    }
+    .modal-title {
+      color: #005bc2;
+      }
+      .modal-body .Guest-Mode {
+  border: 2px solid #3d1cfe;
+  border-radius: 10px;
+  font-size: 17px;
+  color: black;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  padding: 10px; /* Adjust as needed */
+  width: 100%;
+  height: auto;
+}
+    .modal-body .Guest-Mode:hover {
+      background-color: #005bc2;
+    } span {
+        color: #007bff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark mt-5">
+  <div class="container d-flex align-items-center p-1">
+    <a href="#" class="navbar-brand d-flex align-items-center ms-3">
+      <img src="heart.png" alt="Logo" class="brandlogo" height="40" />
+      <span class="ms-2 fw-bold">P.I.S</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon bg-primary"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item mx-2"><a href="index.html" class="nav-link">Home</a></li>
+        <li class="nav-item mx-2"><a href="about.html" class="nav-link">About</a></li>
+        <li class="nav-item mx-2"><a href="contact.html" class="nav-link">Contact</a></li>
+
+        <li class="nav-item mx-2 register-active">
+   <a href="index.html" class="nav-link text-decoration-none" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
+        </li>
+        <form id="searchForm" class="d-flex position-relative mx-3" role="search" style="width: 300px;">
+          <input
+            class="form-control me-2"
+            type="search"
+            id="searchInput"
+            placeholder="🔎 Medicine or Symptom..."
+            aria-label="Search"
+            oninput="filterMedicines()"
+            autocomplete="off"
+          />
+        
+          <ul id="suggestions" class="dropdown-menu mt-1"></ul>
+        </form>
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="loginModalLabel">Choose Login Type</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex flex-column align-items-center justify-content-center">
+        <a href="login_patient.html" class="text-decoration-none w-75">
+          <div class="Guest-Mode d-flex align-items-center justify-content-center mb-3">
+            <span>Patient Login</span>
+          </div>
+        </a>
+        <a href="login_doctor.html" class="text-decoration-none w-75">
+          <div class="Guest-Mode d-flex align-items-center justify-content-center mb-3">
+            <span>Doctor Login</span>
+          </div>
+        </a>
+        <a href="login_admin.html" class="text-decoration-none w-75">
+          <div class="Guest-Mode d-flex align-items-center justify-content-center mb-3">
+            <span>Admin Login</span>
+          </div>
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<!-- Hero Section -->
+<section class="text-light p-5 text-center mt-5">
+  <div class="container-xl">
+    <div class="d-sm-flex justify-content-between mx-5 gap-3">
+      <div>
+        <h1 class="text-blue">Hello This Is Guest-mode!</h1>
+        <h2 class="text-muted fs-3">Free Medical Research Website</h2>
+        <h3 class="text-danger fs-5">Don't Forget to Consult Your Doctor</h3>
+     
+      </div>
+      <div class="position-relative">
+        <span class="text-Doctor position-absolute">Consult Your Doctor</span>
+        <img class="img-fluid mt-3 doctor-img" src="image.png" alt="Doctor"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="chatWidget">
+  <div id="chatHeader">Medicine Chatbot</div>
+  <div id="chatContent">
+    <textarea id="symptomsInput" placeholder="Enter symptoms here..."></textarea>
+    <div id="controls">
+      <select id="langSelect">
+        <option value="en">English</option>
+        <option value="tag">Tagalog</option>
+        <option value="bis">Bisaya</option>
+      </select>
+      <button id="checkBtn">Check</button>
+    </div>
+    <pre id="output">Type symptoms and click Check.</pre>
+  </div>
+</div>
+
+<script>
+  const medicines = [
+   
+    { name: "Paracetamol", enDescription: "A common pain reliever and fever reducer.", tagDescription: "Isang pangkaraniwang pampawala ng sakit at pangpababa ng lagnat.", bisDescription: "Usa ka kasagarang tambal alang sa kasakit ug hilanat.", symptoms: ["fever", "headache", "body pain", "sakit ako tyan", "pain"] },
+    { name: "Ibuprofen", enDescription: "An anti-inflammatory drug that helps reduce fever, pain, and swelling.", tagDescription: "Isang gamot na pampabawas ng pamamaga at sakit.", bisDescription: "Usa ka tambal nga makapahupay sa kasakit ug makapahuyang sa panuhot.", symptoms: ["pain", "swelling", "fever", "cramps"] },
+    { name: "Aspirin", enDescription: "Used for pain relief, anti-inflammatory, and to reduce fever.", tagDescription: "Ginagamit para sa pagpapawala ng sakit, pamamaga, at lagnat.", bisDescription: "Gigamit aron mopahupay sa kasakit, anti-inflammatory, ug moubos ang hilanat.", symptoms: ["fever", "headache", "toothache"] },
+    { name: "Amoxicillin", enDescription: "An antibiotic used to treat various bacterial infections.", tagDescription: "Isang antibiotic na ginagamit sa paggamot ng iba't ibang impeksyon.", bisDescription: "Usa ka antibiotiko nga gigamit sa pagtambal sa daghang klase sa impeksyon.", symptoms: ["infection", "sore throat", "tonsillitis", "UTI"] },
+    { name: "Loratadine", enDescription: "An antihistamine used to relieve allergy symptoms.", tagDescription: "Isang antihistamine na ginagamit para mapawi ang mga sintomas ng allergy.", bisDescription: "Usa ka antihistamine nga gigamit aron mapawala ang mga sintoma sa allergy.", symptoms: ["allergy", "runny nose", "itchy eyes"] },
+    // Add more medicines here — total 50 items
+    { name: "Cetirizine", enDescription: "Relieves allergy symptoms like sneezing and itching.", tagDescription: "Nagpapawala ng mga sintomas ng allergy tulad ng pagbahing at pangangati.", bisDescription: "Nagapawala sa mga sintomas sa allergy sama sa pag-uy-uy ug pangalot.", symptoms: ["allergy", "sneezing", "itching"] },
+    { name: "Metformin", enDescription: "Used to control blood sugar in type 2 diabetes.", tagDescription: "Ginagamit upang kontrolin ang blood sugar sa type 2 diabetes.", bisDescription: "Gigamit sa pagkontrol sa blood sugar sa type 2 diabetes.", symptoms: ["diabetes", "high blood sugar"] },
+    { name: "Omeprazole", enDescription: "Reduces stomach acid and treats GERD.", tagDescription: "Nagpapababa ng asido sa tiyan at ginagamot ang GERD.", bisDescription: "Nagapakunhod sa asido sa tiyan ug nagtambal sa GERD.", symptoms: ["acid reflux", "heartburn", "GERD"] },
+    { name: "Diphenhydramine", enDescription: "An antihistamine used for allergy relief and sleep aid.", tagDescription: "Isang antihistamine para sa allergy at tulog.", bisDescription: "Usa ka antihistamine alang sa allergy ug pagtulog.", symptoms: ["allergy", "sleep aid"] },
+    { name: "Azithromycin", enDescription: "Antibiotic for bacterial infections.", tagDescription: "Antibiotic para sa mga bacterial infection.", bisDescription: "Antibiotiko para sa bacterial infections.", symptoms: ["infection", "bacterial infection"] },
+    { name: "Amoxicillin-Clavulanate", enDescription: "Combination antibiotic for bacterial infections.", tagDescription: "Kombinasyon ng antibiotic para sa bacterial infections.", bisDescription: "Kombinasyon nga antibiotiko para sa bacterial infections.", symptoms: ["infection", "bacterial infection"] },
+    { name: "Salbutamol", enDescription: "Bronchodilator used to relieve asthma symptoms.", tagDescription: "Ginagamit para sa paghinga ng mga may hika.", bisDescription: "Gigamit aron matabangan ang mga adunay hika.", symptoms: ["asthma", "wheezing", "shortness of breath"] },
+    { name: "Prednisone", enDescription: "Steroid to reduce inflammation.", tagDescription: "Steroid para pababain ang pamamaga.", bisDescription: "Steroid aron mapakunhod ang kasukaon.", symptoms: ["inflammation", "allergy"] },
+    { name: "Fexofenadine", enDescription: "Antihistamine for allergy relief.", tagDescription: "Antihistamine para sa allergy.", bisDescription: "Antihistamine para sa allergy.", symptoms: ["allergy"] },
+    { name: "Ranitidine", enDescription: "Reduces stomach acid.", tagDescription: "Nagpapababa ng asido sa tiyan.", bisDescription: "Nagapakunhod sa asido sa tiyan.", symptoms: ["acid reflux", "heartburn"] },
+    { name: "Doxycycline", enDescription: "Antibiotic for various infections.", tagDescription: "Antibiotic para sa iba't ibang impeksyon.", bisDescription: "Antibiotiko para sa lainlaing mga impeksyon.", symptoms: ["infection"] },
+    { name: "Hydrocortisone", enDescription: "Steroid cream for inflammation and itching.", tagDescription: "Steroid cream para sa pamamaga at pangangati.", bisDescription: "Steroid cream para sa kasukaon ug pangalot.", symptoms: ["inflammation", "itching", "rash"] },
+    { name: "Nitroglycerin", enDescription: "Used for chest pain (angina).", tagDescription: "Ginagamit para sa pananakit ng dibdib.", bisDescription: "Gigamit para sa kasakit sa dughan.", symptoms: ["chest pain", "angina"] },
+    { name: "Warfarin", enDescription: "Blood thinner to prevent clots.", tagDescription: "Pampapagaang ng dugo upang maiwasan ang pamumuo.", bisDescription: "Blood thinner aron malikayan ang pamumuo sa dugo.", symptoms: ["blood clot", "stroke prevention"] },
+    { name: "Clopidogrel", enDescription: "Prevents blood clots.", tagDescription: "Pinipigilan ang pamumuo ng dugo.", bisDescription: "Nagapugong sa pamumuo sa dugo.", symptoms: ["blood clot", "heart attack prevention"] },
+    { name: "Levothyroxine", enDescription: "Used for hypothyroidism.", tagDescription: "Ginagamit para sa hypothyroidism.", bisDescription: "Gigamit para sa hypothyroidism.", symptoms: ["hypothyroidism"] },
+    { name: "Lisinopril", enDescription: "Used for high blood pressure.", tagDescription: "Ginagamit para sa mataas na presyon ng dugo.", bisDescription: "Gigamit para sa taas nga presyon sa dugo.", symptoms: ["high blood pressure", "hypertension"] },
+    { name: "Atorvastatin", enDescription: "Lowers cholesterol.", tagDescription: "Nagpapababa ng cholesterol.", bisDescription: "Nagapakunhod sa cholesterol.", symptoms: ["high cholesterol"] },
+    { name: "Simvastatin", enDescription: "Lowers cholesterol.", tagDescription: "Nagpapababa ng cholesterol.", bisDescription: "Nagapakunhod sa cholesterol.", symptoms: ["high cholesterol"] },
+    { name: "Metoprolol", enDescription: "Used for high blood pressure and heart issues.", tagDescription: "Ginagamit para sa mataas na presyon ng dugo at problema sa puso.", bisDescription: "Gigamit para sa taas nga presyon sa dugo ug sakit sa kasingkasing.", symptoms: ["high blood pressure", "heart disease"] },
+    { name: "Alprazolam", enDescription: "Used for anxiety and panic disorders.", tagDescription: "Ginagamit para sa anxiety at panic disorders.", bisDescription: "Gigamit para sa anxiety ug panic disorders.", symptoms: ["anxiety", "panic attacks"] },
+    { name: "Diazepam", enDescription: "Used for anxiety, muscle spasms.", tagDescription: "Ginagamit para sa anxiety at muscle spasms.", bisDescription: "Gigamit para sa anxiety ug muscle spasms.", symptoms: ["anxiety", "muscle spasms"] },
+    { name: "Omeprazole", enDescription: "Reduces stomach acid.", tagDescription: "Nagbabawas ng asido sa tiyan.", bisDescription: "Nagapakunhod sa asido sa tiyan.", symptoms: ["acid reflux", "heartburn"] },
+    { name: "Pantoprazole", enDescription: "Reduces stomach acid.", tagDescription: "Nagbabawas ng asido sa tiyan.", bisDescription: "Nagapakunhod sa asido sa tiyan.", symptoms: ["acid reflux", "GERD"] },
+    { name: "Loperamide", enDescription: "Used to treat diarrhea.", tagDescription: "Ginagamit para sa pagtatae.", bisDescription: "Gigamit para sa pagtatae.", symptoms: ["diarrhea"] },
+    { name: "Ranitidine", enDescription: "Reduces stomach acid.", tagDescription: "Nagbabawas ng asido sa tiyan.", bisDescription: "Nagapakunhod sa asido sa tiyan.", symptoms: ["acid reflux", "heartburn"] },
+    { name: "Hydroxyzine", enDescription: "Used for allergy and anxiety.", tagDescription: "Ginagamit para sa allergy at anxiety.", bisDescription: "Gigamit para sa allergy ug anxiety.", symptoms: ["allergy", "anxiety"] },
+    { name: "Clarithromycin", enDescription: "Antibiotic for infections.", tagDescription: "Antibiotic para sa mga impeksyon.", bisDescription: "Antibiotiko para sa mga impeksyon.", symptoms: ["infection"] },
+    { name: "Mupirocin", enDescription: "Topical antibiotic for skin infections.", tagDescription: "Antibiotic na panlabas para sa mga impeksyon sa balat.", bisDescription: "Antibiotiko para sa mga impeksyon sa panit.", symptoms: ["skin infection"] },
+    { name: "Saline Nasal Spray", enDescription: "Relieves nasal congestion.", tagDescription: "Nagpapawala ng bara sa ilong.", bisDescription: "Nagapawala sa barado sa ilong.", symptoms: ["nasal congestion", "runny nose"] },
+    { name: "Acetaminophen", enDescription: "Pain reliever and fever reducer.", tagDescription: "Pampawala ng sakit at lagnat.", bisDescription: "Tambal para sa kasakit ug hilanat.", symptoms: ["fever", "pain"] },
+    { name: "Naproxen", enDescription: "Anti-inflammatory pain reliever.", tagDescription: "Pampawala ng sakit na may anti-inflammatory effect.", bisDescription: "Pampawala sa kasakit ug panuhot.", symptoms: ["pain", "inflammation"] },
+    { name: "Guaifenesin", enDescription: "Helps loosen mucus and relieve cough.", tagDescription: "Tumutulong na mapaluwag ang plema at mapawala ang ubo.", bisDescription: "Tabang sa pagluag sa uhong ug pagpakunhod sa ubo.", symptoms: ["cough", "mucus"] },
+    { name: "Dextromethorphan", enDescription: "Cough suppressant.", tagDescription: "Pampawala ng ubo.", bisDescription: "Pampawala sa ubo.", symptoms: ["cough"] },
+    { name: "Codeine", enDescription: "Cough suppressant and pain reliever.", tagDescription: "Pampawala ng ubo at sakit.", bisDescription: "Pampawala sa ubo ug kasakit.", symptoms: ["cough", "pain"] },
+    { name: "Phenylephrine", enDescription: "Decongestant to relieve nasal swelling.", tagDescription: "Decongestant para sa pamamaga ng ilong.", bisDescription: "Decongestant para sa hubag sa ilong.", symptoms: ["nasal congestion"] },
+    { name: "Fluticasone", enDescription: "Nasal spray to reduce inflammation.", tagDescription: "Nasal spray para pababain ang pamamaga.", bisDescription: "Nasal spray para mapakunhod ang kasukaon.", symptoms: ["nasal inflammation", "allergy"] },
+    { name: "Mometasone", enDescription: "Steroid nasal spray for allergies.", tagDescription: "Steroid nasal spray para sa allergy.", bisDescription: "Steroid nasal spray para sa allergy.", symptoms: ["allergy", "nasal congestion"] },
+    { name: "Budesonide", enDescription: "Inhaled steroid for asthma.", tagDescription: "Inhaled steroid para sa hika.", bisDescription: "Inhaled steroid para sa hika.", symptoms: ["asthma"] },
+    { name: "Albuterol", enDescription: "Bronchodilator for asthma relief.", tagDescription: "Bronchodilator para sa hika.", bisDescription: "Bronchodilator para sa hika.", symptoms: ["asthma", "wheezing"] },
+  ];
+
+  const searchInput = document.getElementById('searchInput');
+  const suggestions = document.getElementById('suggestions');
+  const searchForm = document.getElementById('searchForm');
+
+  function filterMedicines() {
+    const query = searchInput.value.trim().toLowerCase();
+    suggestions.innerHTML = '';
+    if (!query) {
+      suggestions.style.display = 'none';
+      return;
+    }
+
+    const filtered = medicines.filter(med => {
+      // Search in name
+      if (med.name.toLowerCase().includes(query)) return true;
+
+      // Search in symptoms
+      if (med.symptoms.some(sym => sym.toLowerCase().includes(query))) return true;
+
+      // Search in any description (en, tag, bis)
+      if (
+        med.enDescription.toLowerCase().includes(query) ||
+        med.tagDescription.toLowerCase().includes(query) ||
+        med.bisDescription.toLowerCase().includes(query)
+      ) return true;
+
+      return false;
+    });
+
+    if (filtered.length === 0) {
+      suggestions.style.display = 'none';
+      return;
+    }
+
+    filtered.forEach(med => {
+      const li = document.createElement('li');
+      li.classList.add('dropdown-item');
+      li.innerHTML = `<strong>${med.name}</strong><br/>
+                      <small>EN: ${med.enDescription}</small><br/>
+                      <small>TAG: ${med.tagDescription}</small><br/>
+                      <small>BIS: ${med.bisDescription}</small>`;
+      li.addEventListener('click', () => {
+        searchInput.value = med.name;
+        suggestions.style.display = 'none';
+      });
+      suggestions.appendChild(li);
+    });
+
+    suggestions.style.display = 'block';
+  }
+
+  // Hide suggestions if click outside the form/input
+  document.addEventListener('click', (e) => {
+    if (!searchForm.contains(e.target)) {
+      suggestions.style.display = 'none';
+    }
+  });
+
+  // Prevent actual form submit (for demo)
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert(`You searched for: "${searchInput.value}"`);
+    suggestions.style.display = 'none';
+  });    
+
+
+  
+const symptomsInput = document.getElementById('symptomsInput');
+const langSelect = document.getElementById('langSelect');
+const checkBtn = document.getElementById('checkBtn');
+const output = document.getElementById('output');
+
+function findMedicinesBySymptoms(inputSymptoms, lang) {
+  const inputWords = inputSymptoms.toLowerCase().split(/[\s,]+/).filter(Boolean);
+  if (inputWords.length === 0) return [];
+
+  const matches = medicines.filter(med =>
+    med.symptoms.some(symptom =>
+      inputWords.some(word => symptom.toLowerCase().includes(word))
+    )
+  );
+
+  return matches.map(med => {
+    let desc = '';
+    if (lang === 'en') desc = med.enDescription;
+    else if (lang === 'tag') desc = med.tagDescription;
+    else if (lang === 'bis') desc = med.bisDescription;
+
+    return `• ${med.name}\n  ${desc}`;
+  });
+}
+
+checkBtn.addEventListener('click', () => {
+  const symptomsText = symptomsInput.value.trim();
+  const lang = langSelect.value;
+  output.textContent = 'Processing...';
+
+  if (!symptomsText) {
+    output.textContent = 'Please enter symptoms to check.';
+    return;
+  }
+
+  const results = findMedicinesBySymptoms(symptomsText, lang);
+
+  if (results.length === 0) {
+    output.textContent = "No matching medicines found for those symptoms. Please consult your doctor.";
+  } else {
+    output.textContent = `Medicines that may help:\n\n${results.join('\n\n')}`;
+  }
+});
+
+// Optional: Allow pressing Enter to trigger Check
+symptomsInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    checkBtn.click();
+  }
+});
+
+// Toggle chat widget open/close on header click
+  chatHeader.addEventListener('click', () => {
+    if (chatWidget.style.height === '40px') {
+      chatWidget.style.height = '400px';
+      chatContent.style.display = 'flex';
+    } else {
+      chatWidget.style.height = '40px';
+      chatContent.style.display = 'none';
+    }
+  });
+
+  // Start minimized
+  chatContent.style.display = 'none';
+  chatWidget.style.height = '40px';
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

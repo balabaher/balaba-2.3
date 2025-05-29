@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🩺 Doctor Dashboard</title>
+    <!-- Bootstrap CSS para nindot ang style -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+      body {
+        background: linear-gradient(to right, #a4d3ff, #dcdada);
+      }
+      .sidebar {
+        height: 100vh;
+        background-color: #343a40;
+        padding-top: 20px;
+      }
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        display: block;
+      }
+      .sidebar a:hover {
+        background-color: #495057;
+      }
+      .navbar-brand {
+        font-weight: bold;
+      }
+      .main-content {
+        padding: 20px;
+      }
+      .table-actions button {
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar para sa taas nga navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">🩺 Doctor Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="doctor_dashboard.html">Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <!-- Profile button, mo-open og modal -->
+              <a class="nav-link" href="#" id="doctorProfileNavLink">Profile</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="index.html" id="logoutLink">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main layout: Sidebar ug Main Content -->
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar para sa navigation ug profile info -->
+        <div class="col-md-2 sidebar">
+          <div id="profileSidebar" style="display: flex; align-items: center; gap: 10px; padding: 0 15px; margin-bottom: 1rem;">
+            <img id="userAvatar" src="image.png" alt="User Avatar" width="40" height="40"/>
+            <div id="DoctorNameDisplay" class="small text-white text-truncate">...</div>
+          </div>
+          <a href="doctor_dashboard.html" id="patientsLink">all Patients</a>
+        </div>
+
+        <!-- Main Content: Table sa mga patients -->
+        <div class="col-md-10 main-content">
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <h3>All Patients</h3>
+          </div>
+          <!-- Search bar para dali pangitaon ang patient -->
+          <div class="d-flex flex-column flex-sm-row gap-2 mt-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by Name"/>
+            <button id="searchButton" class="btn btn-primary">Search</button>
+          </div>
+          <!-- Table para sa list sa mga patients -->
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped mt-5">
+              <thead class="table-dark">
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Name</th>
+                  <th>Age</th>
+                  <th>Gender</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dinhi mo-appear ang mga patients -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para makita ang details sa patient -->
+    <div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-labelledby="patientDetailsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="patientDetailsModalLabel">Patient Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Basic info sa patient -->
+            <p><strong>Patient ID:</strong> <span id="modalPatientId"></span></p>
+            <p><strong>Full Name:</strong> <span id="modalFullName"></span></p>
+            <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+            <p><strong>Phone Number:</strong> <span id="modalPhoneNumber"></span></p>
+            <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+            <p><strong>Age:</strong> <span id="modalAge"></span></p>
+            <p><strong>Date of Birth:</strong> <span id="modalDateOfBirth"></span></p>
+            <hr />
+            <h6>Medical Records:</h6>
+            <p><strong>Date of Birth (Record):</strong> <span id="modalRecordDateOfBirth"></span></p>
+            <p><strong>Medical History:</strong> <span id="modalMedicalHistory"></span></p>
+            <p><strong>Current Medications:</strong> <span id="modalCurrentMedications"></span></p>
+            <p><strong>Surgical History:</strong> <span id="modalSurgicalHistory"></span></p>
+            <p><strong>Allergies:</strong> <span id="modalAllergies"></span></p>
+            <p><strong>Emergency Contact Name:</strong> <span id="modalEmergencyContactName"></span></p>
+            <p><strong>Emergency Contact Phone:</strong> <span id="modalEmergencyContactPhone"></span></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div> 
+
+    <!-- Modal para sa Doctor Profile -->
+    <div class="modal fade" id="doctorProfileModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Doctor Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-2 mb-3">
+              <!-- Mga fields para makita ang doctor details -->
+              <div class="col-md-6">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="doctorProfileFullName" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="text" class="form-control" id="doctorProfileEmail" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="doctorProfilePhone" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Role</label>
+                <input type="text" class="form-control" id="doctorProfileRole" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Specialization</label>
+                <input type="text" class="form-control" id="doctorProfileSpecialization" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Hospital Name</label>
+                <input type="text" class="form-control" id="doctorProfileHospitalName" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Hospital Address</label>
+                <input type="text" class="form-control" id="doctorProfileHospitalAddress" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Info</label>
+                <input type="text" class="form-control" id="doctorProfileContactInfo" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Department</label>
+                <input type="text" class="form-control" id="doctorProfileDepartment" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Gender</label>
+                <input type="text" class="form-control" id="doctorProfileGender" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Age</label>
+                <input type="text" class="form-control" id="doctorProfileAge" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Date of Birth</label>
+                <input type="text" class="form-control" id="doctorProfileDOB" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Created At</label>
+                <input type="text" class="form-control" id="doctorProfileCreatedAt" disabled />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Updated At</label>
+                <input type="text" class="form-control" id="doctorProfileUpdatedAt" disabled />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Doctor Profile Modal -->
+
+    <!-- Bootstrap JS para sa modal ug uban pa -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main JS code -->
+    <script type="module">
+      // Import sa supabase client
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      // Supabase credentials (ayaw kalimot ilisi og imong key)
+      const supabaseUrl = "https://sfqhzoorpthmnrjecjkj.supabase.co";
+      const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmcWh6b29ycHRobW5yamVjamtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ3MjUyMDksImV4cCI6MjA2MDMwMTIwOX0.zS9xjegQ1mYpt6OIZLEvD_cvXFIDmRy20-9wDLC2ASE";
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      // Kuhaon ang doctor name ug id gikan sa localStorage
+      const doctorName = localStorage.getItem("doctorName");
+      const doctorId = localStorage.getItem("doctorId");
+      document.getElementById("DoctorNameDisplay").textContent = doctorName;
+
+      // --- PROTECTION: Dili pwede maka-access kung wala naka-login as doctor ---
+      // Bisaya: Kung walay doctorId or doctorName sa localStorage, i-redirect sa login_doctor.html
+      if (!localStorage.getItem("doctorId") || !localStorage.getItem("doctorName")) {
+        window.location.href = "login_doctor.html";
+      }
+
+      // Function para logout
+      function logout() {
+        localStorage.removeItem("doctorId");
+        localStorage.removeItem("doctorName");
+        window.location.href = "login_doctor.html";
+      }
+
+      // Inig load sa page, kuhaon dayon ang tanan patients
+      window.addEventListener("DOMContentLoaded", () => {
+        loadAllPatients();
+
+        // Doctor Profile Modal Logic
+        const doctorProfileNavLink = document.getElementById("doctorProfileNavLink");
+        const doctorProfileModalEl = document.getElementById("doctorProfileModal");
+        let doctorProfileModal;
+        if (doctorProfileModalEl) {
+          doctorProfileModal = new bootstrap.Modal(doctorProfileModalEl);
+        }
+
+        // Kung i-click ang Profile, kuhaon ang details gikan sa users ug doctors table
+        if (doctorProfileNavLink && doctorProfileModal) {
+          doctorProfileNavLink.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const doctorId = localStorage.getItem("doctorId");
+            if (!doctorId) return;
+
+            // Kuha basic info sa users table
+            const { data: user, error: userError } = await supabase
+              .from("users")
+              .select("*")
+              .eq("id", doctorId)
+              .single();
+
+            // Kuha doctor-specific info sa doctors table
+            const { data: doctor, error: doctorError } = await supabase
+              .from("doctors")
+              .select("*")
+              .eq("user_id", doctorId)
+              .single();
+
+            if (userError || !user) {
+              alert("Failed to fetch doctor profile.");
+              return;
+            }
+
+            // Populate fields gikan sa users table
+            document.getElementById("doctorProfileFullName").value = user.full_name || "";
+            document.getElementById("doctorProfileEmail").value = user.email || "";
+            document.getElementById("doctorProfilePhone").value = user.phone_number || "";
+            document.getElementById("doctorProfileRole").value = user.role || "";
+            document.getElementById("doctorProfileGender").value = user.gender || "";
+            document.getElementById("doctorProfileAge").value = user.date_of_birth ? calculateAge(user.date_of_birth) : "";
+            document.getElementById("doctorProfileDOB").value = user.date_of_birth || "";
+            document.getElementById("doctorProfileCreatedAt").value = user.created_at
+              ? new Date(user.created_at).toLocaleString()
+              : "";
+            document.getElementById("doctorProfileUpdatedAt").value = user.updated_at
+              ? new Date(user.updated_at).toLocaleString()
+              : "";
+
+            // Populate fields gikan sa doctors table (kung naa)
+            document.getElementById("doctorProfileSpecialization").value = doctor ? doctor.specialization || "" : "";
+            document.getElementById("doctorProfileHospitalName").value = doctor ? doctor.hospital_name || "" : "";
+            document.getElementById("doctorProfileHospitalAddress").value = doctor ? doctor.hospital_address || "" : "";
+            document.getElementById("doctorProfileContactInfo").value = doctor ? doctor.contact_info || "" : "";
+            document.getElementById("doctorProfileDepartment").value = doctor ? doctor.department || "" : "";
+
+            // Ipakita ang modal
+            doctorProfileModal.show();
+          });
+        }
+      });
+
+      // Function para kuhaon tanan patients
+      async function loadAllPatients() {
+        // Kuha tanan users nga role kay patient
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("role", "patient");
+
+        if (error) {
+          console.error("Error loading patients:", error);
+          return;
+        }
+
+        if (data.length === 0) {
+          const resultTableBody = document.querySelector("table tbody");
+          resultTableBody.innerHTML = "<tr><td colspan='6'>No patients found.</td></tr>";
+          return;
+        }
+
+        displaySearchResults(data);
+      }
+
+      // Search patients by name
+      document.getElementById("searchButton").addEventListener("click", async () => {
+        const searchTerm = document.getElementById("searchInput").value.trim();
+
+        if (searchTerm === "") {
+          alert("Please enter a name to search.");
+          return;
+        }
+
+        // Search gamit ang name
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .ilike("full_name", `%${searchTerm}%`)
+          .eq("role", "patient");
+
+        if (error) {
+          console.error("Error searching for patients:", error);
+          return;
+        }
+
+        if (data.length === 0) {
+          alert("No patients found with that name.");
+          return;
+        }
+
+        displaySearchResults(data);
+      });
+
+      // Ipakita ang mga patients sa table
+      function displaySearchResults(patients) {
+        const resultTableBody = document.querySelector("table tbody");
+        resultTableBody.innerHTML = "";
+
+        patients.forEach((patient) => {
+          const age = calculateAge(patient.date_of_birth);
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${patient.id}</td>
+            <td>${patient.full_name}</td>
+            <td>${age}</td>
+            <td>${patient.gender}</td>
+            <td class="table-actions">
+              <button class="btn btn-info btn-sm" onclick="viewPatientDetails(${patient.id})">View</button>
+            </td>
+          `;
+          resultTableBody.appendChild(row);
+        });
+      }
+
+      // Function para kuhaon ang edad gikan sa date of birth
+      function calculateAge(dob) {
+        const birthDate = new Date(dob);
+        const currentDate = new Date();
+        let age = currentDate.getFullYear() - birthDate.getFullYear();
+        const monthDifference = currentDate.getMonth() - birthDate.getMonth();
+
+        if (
+          monthDifference < 0 ||
+          (monthDifference === 0 && currentDate.getDate() < birthDate.getDate())
+        ) {
+          age--;
+        }
+        return age;
+      }
+
+      // Function para ipakita ang details sa patient sa modal
+      window.viewPatientDetails = async function (patientId) {
+        // Kuha user data
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", patientId)
+          .single();
+
+        if (userError || !userData) {
+          console.error("Error fetching user data:", userError);
+          alert("Failed to fetch user details.");
+          return;
+        }
+
+        // Kuha medical record data
+        const { data: recordData, error: recordError } = await supabase
+          .from("patient_records")
+          .select("*, emergency_contact_name, emergency_contact_phone")
+          .eq("user_id", patientId)
+          .single();
+
+        if (recordError && recordError.code !== 'PGRST116') {
+          // PGRST116 means no rows found, which is fine if a patient doesn't have a record yet
+          console.error("Error fetching patient record:", recordError);
+          alert("Failed to fetch patient medical records.");
+          return;
+        }
+
+        // Populate modal gamit ang user data
+        document.getElementById("modalPatientId").textContent = userData.id;
+        document.getElementById("modalFullName").textContent = userData.full_name;
+        document.getElementById("modalEmail").textContent = userData.email;
+        document.getElementById("modalPhoneNumber").textContent = userData.phone_number;
+        document.getElementById("modalGender").textContent = userData.gender;
+        document.getElementById("modalAge").textContent = calculateAge(userData.date_of_birth);
+        document.getElementById("modalDateOfBirth").textContent = userData.date_of_birth;
+
+        // Kung naa medical record, populate pud
+        if (recordData) {
+          document.getElementById("modalRecordDateOfBirth").textContent = recordData.date_of_birth || "N/A";
+          document.getElementById("modalMedicalHistory").textContent = recordData.medical_history || "N/A";
+          document.getElementById("modalCurrentMedications").textContent = recordData.current_medications || "N/A";
+          document.getElementById("modalSurgicalHistory").textContent = recordData.surgical_history || "N/A";
+          document.getElementById("modalAllergies").textContent = recordData.allergies || "N/A";
+          document.getElementById("modalEmergencyContactName").textContent = recordData.emergency_contact_name || "N/A";
+          document.getElementById("modalEmergencyContactPhone").textContent = recordData.emergency_contact_phone || "N/A";
+        } else {
+          // Kung wala, N/A tanan
+          document.getElementById("modalRecordDateOfBirth").textContent = "N/A";
+          document.getElementById("modalMedicalHistory").textContent = "N/A";
+          document.getElementById("modalCurrentMedications").textContent = "N/A";
+          document.getElementById("modalSurgicalHistory").textContent = "N/A";
+          document.getElementById("modalAllergies").textContent = "N/A";
+          document.getElementById("modalEmergencyContactName").textContent = "N/A";
+          document.getElementById("modalEmergencyContactPhone").textContent = "N/A";
+        }
+
+        // Ipakita ang modal
+        const patientDetailsModal = new bootstrap.Modal(document.getElementById("patientDetailsModal"));
+        patientDetailsModal.show();
+      };
+
+      document.getElementById("logoutLink").addEventListener("click", function(e) {
+  e.preventDefault();
+  logout();
+});
+    </script>
+  </body>
+</html>
